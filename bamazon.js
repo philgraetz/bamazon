@@ -1,5 +1,6 @@
 // Bamazon - object for accessing DB 'bamazon'
 let mysql = require("mysql");
+let chalk = require("chalk");
 
 const DB_NAME = "bamazon";
 
@@ -66,7 +67,6 @@ function Bamazon() {
                 return;
             }
             this.connected = true;
-            console.log('connected as id ' + this.connection.threadId);
             if (callback)
                 callback();
             return;
@@ -209,25 +209,54 @@ function Bamazon() {
                     this.end();
                     return;
                 }
-                console.log("");
-                console.log("item_id  product_name          department_name     price  quanity");
-                for (let i = 0; i < results.length; i++) {
-                    let id = this.pad('R', results[i].item_id, 7);
-                    let pn = this.pad('L', results[i].product_name, 20);
-                    let dn = this.pad('L', results[i].department_name, 15);
-                    let pr = this.pad('R', results[i].price, 8);
-                    let sn = this.pad('R', results[i].stock_quantity, 7);
-                    console.log(`${id}  ${pn}  ${dn}  ${pr}  ${sn}`);
-                }
-                console.log("");
+                this.displayProducts("", results);
                 if (callback) {
                     callback();
                 }
             }
         );
-
     };
 
+    // ================================
+    // List products with low inventory 
+    // ================================
+    this.listLowInventory = function(callback) {
+        if (!this.connected) {
+            console.log("ERROR (listLowInventory) - not connected");
+            return;
+        }
+        this.connection.query(
+            "select * FROM products WHERE stock_quantity < 5",
+            (err, results, fields) => {
+                if (err) {
+                    console.error("listProducts " + err.stack);
+                    this.end();
+                    return;
+                }
+                this.displayProducts("", results);
+                if (callback) {
+                    callback();
+                }
+            }
+        );
+    };
+
+    // Function to display products
+    this.displayProducts = function(prefix, results) {
+        console.log(prefix);
+        console.log(chalk.bold.underline("item_id  product_name          department_name      price  quantity "));
+        for (let i = 0; i < results.length; i++) {
+            let id = this.pad('R', results[i].item_id, 7);
+            let pn = this.pad('L', results[i].product_name, 20);
+            let dn = this.pad('L', results[i].department_name, 15);
+            let pr = this.pad('R', results[i].price.toFixed(2), 10);
+            let sn = this.pad('R', results[i].stock_quantity, 8);
+            console.log(`${id}  ${pn}  ${dn} ${pr} ${sn} `);
+        }
+        console.log("");
+    }
+
+    // Function to pad for display
     this.pad = function(justify, s1, num) {
         let s2 = s1.toString();
         let p = s2.length < num ? " ".repeat(num-s2.length) : "";
@@ -249,20 +278,58 @@ function Bamazon() {
         });
     };
 
-    // ===============
+    // ================
+    // Add to inventory
+    // ================
+    // ======================
     // Make a purchase
-    // ===============
-    this.makePurchase = function(item_id, stock_quantity, quantity, callback) {
-        let n = stock_quantity - quantity;
-        let queryStr = 'UPDATE products SET stock_quantity = ' + n +
-                        ' WHERE item_id = ' + item_id;
-        this.connection.query(queryStr, (err) => {
-            if (err) {
-                console.error("ERROR (makePurchase) " + err.stack);
-                this.end();
-                return;
-            }
-            callback();
+    // (quantity is negative)
+    // ======================
+    this.addToInventory = function(item_id, quantity, callback) {
+        if (!this.connected) {
+            console.log("ERROR (addToInventory) - not connected");
+            return;
+        }
+        this.connection.query(
+            "select * FROM products WHERE item_id = " + item_id,
+            (err, results, fields) => {
+                if (err) {
+                    console.error("addToInventory " + err.stack);
+                    this.end();
+                    return;
+                }
+
+                // Display this only if manager is adding to inventory
+                if (quantity > 0)
+                    this.displayProducts("\n\n== WAS ==", results);
+
+                let n = parseInt(results[0].stock_quantity) + parseInt(quantity);
+
+                let queryStr = 'UPDATE products SET stock_quantity = ' + n +
+                               ' WHERE item_id = ' + item_id;
+                this.connection.query(queryStr, (err) => {
+                    if (err) {
+                        console.error("ERROR (addToInventory) " + err.stack);
+                        this.end();
+                        return;
+                    }
+                    this.connection.query(
+                        "select * FROM products WHERE item_id = " + item_id,
+                        (err, results, fields) => {
+                            if (err) {
+                                console.error("addToInventory " + err.stack);
+                                this.end();
+                                return;
+                            }
+                
+                            // Display this only if manager is adding to inventory
+                            if (quantity > 0)
+                                this.displayProducts("\n\n== NOW ==", results);
+
+                            if (callback)
+                                callback();
+                        });
+                });
         });
     };
 }

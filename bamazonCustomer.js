@@ -6,13 +6,13 @@ const SEED_PRODUCTS = [
         product_name   : "Network Camera",
         department_name: "Electronics",
         price          : 49.99,
-        stock_quantity : 40
+        stock_quantity : 3
     },
     {
         product_name   : "Backpack",
         department_name: "Camping",
         price          : 85.00,
-        stock_quantity : 30
+        stock_quantity : 8
     },
     {
         product_name   : "Lemon Jello",
@@ -24,13 +24,13 @@ const SEED_PRODUCTS = [
         product_name   : "40 inch UHD TV",
         department_name: "electronics",
         price          : 299.99,
-        stock_quantity : 15
+        stock_quantity : 10
     },
     {
         product_name   : "Paper towels 8 pack",
         department_name: "Groceries",
         price          : 12.99,
-        stock_quantity : 65
+        stock_quantity : 4
     },
     {
         product_name   : "4 person tent",
@@ -39,10 +39,10 @@ const SEED_PRODUCTS = [
         stock_quantity : 10
     },
     {
-        product_name   : "Backpack",
-        department_name: "Camping",
-        price          : 85.00,
-        stock_quantity : 30
+        product_name   : "Turboforce Fan",
+        department_name: "Appliances",
+        price          : 15.00,
+        stock_quantity : 12
     },
     {
         product_name   : "Deluxe SS toaster 4",
@@ -60,7 +60,7 @@ const SEED_PRODUCTS = [
         product_name   : "65 inch UHD TV",
         department_name: "Electronics",
         price          : 898.98,
-        stock_quantity : 8
+        stock_quantity : 2
     },
 ];
 
@@ -96,7 +96,7 @@ function startup() {
 // Populate the products table
 // When it is done, call addProducts()
 function populateProducts() {
-    console.log("populateProducts");
+    console.log("populating 'products' table");
     bamazon.createProductsTable(addProduct);
 }
 
@@ -104,7 +104,6 @@ function populateProducts() {
 function addProduct(index) {
     if (index === undefined)
         index = 0;
-    console.log("addProduct " + index);
 
     // Loop on this until we've gotten all SEED_PROCUCTS
     if (index < SEED_PRODUCTS.length) {
@@ -117,21 +116,22 @@ function addProduct(index) {
 
 // Connect to the DB
 function connectToDB() {
-    console.log("connectToDB");
     bamazon.connectToDB(selectAction);
 }
 
+// Select next action
 function selectAction() {
     inquirer.prompt({
         type   : 'list',
         name   : 'action',
         message: "\nWhat to do next?",
-        choices: ['List products', 'Buy something', 'Exit']
+        choices: ['List Products', 
+                  'Buy Something', 
+                  'Exit']
     }).then(answer => {
-        console.log(answer);
-        if (answer.action === 'List products') {
+        if (answer.action === 'List Products') {
             listProducts();
-        } else if (answer.action === 'Buy something') {
+        } else if (answer.action === 'Buy Something') {
             buyStuff();
         } else {
             bamazon.end();
@@ -139,13 +139,13 @@ function selectAction() {
     });
 }
 
+// List Products
 function listProducts() {
-    console.log("listProducts");
     bamazon.listProducts(selectAction);
 }
 
+// Buy Something
 function buyStuff() {
-    console.log("buyStuff");
     inquirer.prompt([
         {
             type   : 'input',
@@ -174,8 +174,7 @@ function buyStuff() {
                         default: false
                     }).then(confirm => {
                         if (confirm.ok) {
-                            bamazon.makePurchase(answers.id, stock_quantity,
-                                quantity, function() {
+                            bamazon.addToInventory(answers.id, -quantity, function() {
                                     console.log("\nPurchase completed, total = $"+ cost);
                                     selectAction();
                                 });
@@ -193,5 +192,6 @@ function buyStuff() {
     });
 }
 
+// Start
 startup();
 
