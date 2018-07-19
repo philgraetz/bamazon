@@ -2,18 +2,64 @@ let Bamazon = require("./bamazon");
 let inquirer = require("inquirer");
 
 // Create a 'bamazon' object
-// Set up its connection params
 let bamazon = new Bamazon();
-bamazon.setConnectParams({
-    host     : 'localhost',
-    port     : 3306,
-    user     : "root",
-    password : "root",
-});
 
 // Startup
 function startup() {
-    bamazon.connectToDB(selectAction);
+    let cp = bamazon.getConnectParams();
+    console.log("Default connection parameters:");
+    console.log("  host     : " + cp.host);
+    console.log("  port     : " + cp.port);
+    console.log("  user     : " + cp.user);
+    console.log("  password : " + cp.password);
+    console.log("")
+    inquirer.prompt({
+        type   : 'confirm',
+        name   : 'change',
+        message: "Do you need to change these parameters?",
+        default: false
+    }).then(answer => {
+        if (answer.change) {
+            inquirer.prompt([
+                {
+                    type   : 'input',
+                    name   : 'host',
+                    message: 'host',
+                    default: cp.host
+                },
+                {
+                    type   : 'input',
+                    name   : 'port',
+                    message: 'port',
+                    default: cp.port
+                },
+                {
+                    type   : 'input',
+                    name   : 'user',
+                    message: 'user',
+                    default: cp.user
+                },
+                {
+                    type   : 'password',
+                    name   : 'password',
+                    mask   : '*',
+                    message: 'password',
+                    default: cp.password
+                },
+            ]).then(answers => {
+                let newParams = {
+                    host: answers.host,
+                    port: answers.port,
+                    user: answers.user,
+                    password: answers.password,
+                };
+                bamazon.setConnectParams(newParams);
+                bamazon.connectToDB(selectAction);
+            });
+        } else {
+            bamazon.connectToDB(selectAction);
+        }
+    });
 }
 
 // Select next action

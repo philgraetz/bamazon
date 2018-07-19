@@ -1,36 +1,31 @@
-// Bamazon - object for accessing DB 'bamazon'
 let mysql = require("mysql");
 let chalk = require("chalk");
-
 const DB_NAME = "bamazon";
 
+const DEFAULT_CONNECT_PARAMS = 
+{
+    host     : 'localhost',
+    port     : 3306,
+    user     : "root",
+    password : "root",
+};
+
+// ===========================================
+// Bamazon - object for accessing DB 'bamazon'
+// Uses mysql node module
+// ===========================================
 function Bamazon() {
     this.connection = null;
     this.connected = false;     // Connected to DB
+    this.connectParams = DEFAULT_CONNECT_PARAMS;
 
-    // Set up parameters used for connecting to DB
-    // (This must be done first)
+    // Used to change the connection params if needed
+    this.getConnectParams = function() {
+        return this.connectParams;
+    }
     this.setConnectParams = function(params) {
         this.connectParams = params;
     };
-    
-    // ==================
-    // End the connection
-    // ==================
-    this.end = function(callback) {
-        this.connected = false;
-        if (this.connection !== null) {
-            console.log("Connection end");
-            this.connection.end(callback);
-            this.connection = null;
-            this.connected = false;
-            return;
-        }
-        console.log("Connection end - no connection");
-        this.connection = null;
-        this.connected = false;
-        return;
-    }
 
     // =======================
     // Connect to DB 'bamazon'
@@ -72,6 +67,24 @@ function Bamazon() {
             return;
         });
     };
+    
+    // ==================
+    // End the connection
+    // ==================
+    this.end = function(callback) {
+        this.connected = false;
+        if (this.connection !== null) {
+            console.log("Connection end");
+            this.connection.end(callback);
+            this.connection = null;
+            this.connected = false;
+            return;
+        }
+        console.log("Connection end - no connection");
+        this.connection = null;
+        this.connected = false;
+        return;
+    }
 
     // =====================================
     // Drop (if exists) and Create 'bamazon'
@@ -282,6 +295,7 @@ function Bamazon() {
     // Add to inventory
     // ================
     // ======================
+    // Also used for:
     // Make a purchase
     // (quantity is negative)
     // ======================

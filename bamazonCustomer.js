@@ -64,19 +64,71 @@ const SEED_PRODUCTS = [
     },
 ];
 
-
 // Create a 'bamazon' object
-// Set up its connection params
 let bamazon = new Bamazon();
-bamazon.setConnectParams({
-    host     : 'localhost',
-    port     : 3306,
-    user     : "root",
-    password : "root",
-});
 
-// Startup - Do you need to create the database?
+// Startup
 function startup() {
+    // List and confirm the connection paramters
+    let cp = bamazon.getConnectParams();
+    console.log("Default connection parameters:");
+    console.log("  host     : " + cp.host);
+    console.log("  port     : " + cp.port);
+    console.log("  user     : " + cp.user);
+    console.log("  password : " + cp.password);
+    console.log("")
+    inquirer.prompt({
+        type   : 'confirm',
+        name   : 'change',
+        message: "Do you need to change these parameters?",
+        default: false
+    }).then(answer => {
+        if (answer.change) {
+            inquirer.prompt([
+                {
+                    type   : 'input',
+                    name   : 'host',
+                    message: 'host',
+                    default: cp.host
+                },
+                {
+                    type   : 'input',
+                    name   : 'port',
+                    message: 'port',
+                    default: cp.port
+                },
+                {
+                    type   : 'input',
+                    name   : 'user',
+                    message: 'user',
+                    default: cp.user
+                },
+                {
+                    type   : 'password',
+                    name   : 'password',
+                    mask   : '*',
+                    message: 'password',
+                    default: cp.password
+                },
+            ]).then(answers => {
+                let newParams = {
+                    host: answers.host,
+                    port: answers.port,
+                    user: answers.user,
+                    password: answers.password,
+                };
+                bamazon.setConnectParams(newParams);
+                startup2();
+            });
+        } else {
+            startup2();
+        }
+    });
+}
+    
+// Startup part 2    
+function startup2() {
+    // Startup - Do you need to create the database?
     inquirer.prompt({
         type   : 'confirm',
         name   : 'dropAndCreate',
@@ -88,8 +140,9 @@ function startup() {
             // When it is done, call populateProducts()
             bamazon.dropAndCreateDB(populateProducts); 
             return;
+        } else {
+            connectToDB();
         }
-        connectToDB();
     });
 }
 
