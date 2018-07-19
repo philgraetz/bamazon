@@ -69,3 +69,33 @@ What to do next? (Use arrow keys)
 Use the up/down arrow keys to make a selection and hit ENTER. 
 
 From here, follow the prompts. It should be intuitive enough.
+
+## Screenshots
+## bamazonCustomer
+bamazonCustomer startup and 'List Products'
+![startup](screens/bamazonCustomerStartup.png)
+
+
+Buy Something
+![Buy Something](screens/buy.png)
+
+### bamazonManager
+View Products For Sale
+![View Products For Sale](screens/products.png)
+
+
+View Low Inventory
+![View Low Inventory](screens/low-inventory.png)
+
+
+Add To Inventory
+![Add To Inventory](screens/add-to-inventory.png)
+
+
+Add New Product
+![Add New Product](screens/add-product.png)
+
+
+
+
+
