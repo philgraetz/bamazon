@@ -4,6 +4,10 @@ node CLI programs that use mySQL. There are two programs:
 - bamazonManager - CLI to manage inventory
 
 The programs connect to a mySQL database and read and update entries in the database. There is the option to have the program create the 'bamazon' database and populate it with seed data. Or, the database can be created with a .sql file through mySQL Workbench or something similar. (.sql file is not provided here. Use the option in the program instead if you need seed data.)
+## Dependencies
+- mysql
+- inquirer
+- chalk
 
 ## Instructions
 You must be able to connect to a running mySQL server.
