@@ -12,6 +12,10 @@ The programs connect to a mySQL database and read and update entries in the data
 ## Instructions
 You must be able to connect to a running mySQL server.
 
+To install the node module depencies:
+
+<code>npm install</code>
+
 ### bamazonCustomer
 To start the program enter:
 
